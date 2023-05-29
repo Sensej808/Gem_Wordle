@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    Wordle (0.1.0)
+    Wordle (2.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -29,6 +29,7 @@ GEM
     rubocop-ast (1.28.1)
       parser (>= 3.2.1.0)
     ruby-progressbar (1.13.0)
+    sqlite3 (1.6.3-x64-mingw-ucrt)
     unicode-display_width (2.4.2)
 
 PLATFORMS
@@ -39,6 +40,7 @@ DEPENDENCIES
   minitest (~> 5.0)
   rake (~> 13.0)
   rubocop (~> 1.21)
+  sqlite3
 
 BUNDLED WITH
    2.4.13
