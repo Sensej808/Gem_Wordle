@@ -7,6 +7,7 @@ require "sqlite3"
 module Wordle
   class WordleError < StandardError; end
   # Your code goes here...
+  class WrongAttemptsNumberError < WordleError; end
   class WrongLengthError < WordleError; end
   class NoMatchInDB < WordleError; end
 
@@ -24,8 +25,10 @@ module Wordle
       # File.readlines( "#{__dir__ }/txt/#{@length}L.txt").sample
     end
 
+    private :pick_random_line
     def initialize(len = 5, attempts = 6)
       @length = len
+      raise WrongAttemptsNumberError if attempts <= 0
       @attempts = attempts
       @@db_path = "#{__dir__}/txt/words.db"
       @answer = pick_random_line
@@ -36,7 +39,7 @@ module Wordle
     end
 
     def guess(str)
-      return [Array.new(str.length) { |i| [str[i], nil] }, :attempts_zero] if @attempts.zero?
+
 
       raise WrongLengthError, "wrong answer length" if str.length != @answer.length
 
@@ -45,6 +48,10 @@ module Wordle
 
       raise NoMatchInDB, "there is no such word in database" if checker.nil?
 
+      return [Array.new(str.length) { |i| [str[i], nil] }, :attempts_zero] if @attempts.zero?
+
+      str.downcase!
+      @attempts -= 1
       if str == @answer
         return [Array.new(str.length) { |i| [str[i], :green] }, :solved]
       end
@@ -57,7 +64,7 @@ module Wordle
 
       str.chars.each_index { |ind| res[ind][1] = :grey if res[ind][1].nil? }
 
-      @attempts -= 1
+
       return [res, :not_solved]
     end
   end
