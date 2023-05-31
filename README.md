@@ -4,34 +4,36 @@
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Для установки данного гема нужно скачать архив со всеми файлами в репозитории
 
-Install the gem and add to the application's Gemfile by executing:
-
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
-
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
-
+Далее нужно открыть консоль и перейти в дерикторию данного гема и выполнить команду `rake install`. После этого гем можно подключать к своим проектам с помощью `requare "Wordle"`
 ## Usage
 
-TODO: Write usage instructions here
+В данный гем состоит из `module Wordle`, в котором определены все исключения:
+* `class WordleError`
+* `class WrongAttemptsNumberError < WordleError`
+* `class WrongLengthError < WordleError`
+* `class NoMatchInDB < WordleError`
 
-## Development
+и главный класс `GameRound`.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Для инициализации игры нужно вызвать конструктор 
+`GameRound` с длиной слова(от 4 до 8) и количеством разрешенных попыток
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+`game = Wordle::GameRound.new(4,3) //@anser = "date", @attempts = 3` 
 
-## Contributing
+Гем случайным образом выберет слово нужной длины из своей базы данных.
+Чтобы попытаться угадать слово, нужно вызвать метод `guess` у данного объекта
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/Wordle. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/Wordle/blob/master/CODE_OF_CONDUCT.md).
+`game.gues("meta") `
 
-## License
+Данный метод возвращает массив разметки букв: 
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+`[
+[['m', :gray], ['e', :yellow], ['m', :green], ['a', :yellow]], :not_solved
+]`
 
-## Code of Conduct
-
-Everyone interacting in the Wordle project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/Wordle/blob/master/CODE_OF_CONDUCT.md).
+ где 
+*  `:gray` - буквы в ответе нет
+*  `:yellow` - буква есть,но она стоит не на своём месте
+*  `:green` - буква стоит на своём месте
