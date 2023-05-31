@@ -56,11 +56,17 @@ module Wordle
         return [Array.new(str.length) { |i| [str[i], :green] }, :solved]
       end
 
+      marker = Array.new(str.length, false)
       res = Array.new(str.length) { |i| [str[i], nil] }
 
-      str.chars.each_index { |ind| res[ind][1] = :green if str[ind] == @answer[ind] }
+      str.chars.each_index do |ind|
+        if str[ind] == @answer[ind]
+          res[ind][1] = :green
+          marker[ind] = true
+        end
+      end
 
-      str.chars.each_with_index { |c, ind| res[ind][1] = :yellow if !/[#{c}]/.match(@answer).nil? && res[ind][1].nil? }
+      str.chars.each_with_index { |c, ind| res[ind][1] = :yellow  if !@answer.index(/[#{c}]/).nil? && res[ind][1].nil?  && marker[@answer.index(/[#{c}]/)] == false }
 
       str.chars.each_index { |ind| res[ind][1] = :grey if res[ind][1].nil? }
 
