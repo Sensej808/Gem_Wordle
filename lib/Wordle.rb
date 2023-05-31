@@ -1,28 +1,33 @@
 # frozen_string_literal: true
 
-load "txt/words.db"
 require_relative "Wordle/version"
 require "wordle_runner"
 require "sqlite3"
 
-
 module Wordle
-  class Error < StandardError; end
+  class WordleError < StandardError; end
   # Your code goes here...
+  class WrongLengthError < WordleError; end
+  class NoMatchInDB < WordleError; end
 
   class GameRound
-
     def pick_random_line
       db = SQLite3::Database.new @@db_path
-      return db.execute "SELECT * FROM four ORDER BY RANDOM() LIMIT 1"
+      begin
+        db.execute( "SELECT * FROM '#{@length}l' ORDER BY RANDOM() LIMIT 1")[0][0]
+      rescue SQLite3::SQLException
+        raise WrongLengthError, "Wrong length in GameRound constructor"
+      end
 
-      #File.readlines( "#{__dir__ }/txt/#{@length}L.txt").sample
+
+
+      # File.readlines( "#{__dir__ }/txt/#{@length}L.txt").sample
     end
 
-    def initialize(len, attempts)
+    def initialize(len = 5, attempts = 6)
       @length = len
-      @attempts_limit = attempts
-      @@db_path = "#{__dir__}/lib/words.db"
+      @attempts = attempts
+      @@db_path = "#{__dir__}/txt/words.db"
       @answer = pick_random_line
     end
 
@@ -31,18 +36,29 @@ module Wordle
     end
 
     def guess(str)
-      return "Well done" if str == @answer
+      return [Array.new(str.length) { |i| [str[i], nil] }, :attempts_zero] if @attempts.zero?
 
-      @attempts_limit -= 1
-      return "Loh!" if @attempts_limit.zero?
+      raise WrongLengthError, "wrong answer length" if str.length != @answer.length
 
-      "Wrong"
+      db = SQLite3::Database.new @@db_path
+      checker = db.execute("SELECT * FROM '#{@length}l' WHERE WORD='#{str}'")[0]
+
+      raise NoMatchInDB, "there is no such word in database" if checker.nil?
+
+      if str == @answer
+        return [Array.new(str.length) { |i| [str[i], :green] }, :solved]
+      end
+
+      res = Array.new(str.length) { |i| [str[i], nil] }
+
+      str.chars.each_index { |ind| res[ind][1] = :green if str[ind] == @answer[ind] }
+
+      str.chars.each_with_index { |c, ind| res[ind][1] = :yellow if !/[#{c}]/.match(@answer).nil? && res[ind][1].nil? }
+
+      str.chars.each_index { |ind| res[ind][1] = :grey if res[ind][1].nil? }
+
+      @attempts -= 1
+      return [res, :not_solved]
     end
   end
 end
-
-
-
-db = SQLite3::Database.new "C:/Users/User/Documents/GitHub/Gem_Wordle/lib/words.db"
-puts db.execute "SELECT * FROM four ORDER BY RANDOM() LIMIT 1"
-
